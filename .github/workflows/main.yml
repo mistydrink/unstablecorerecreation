@@ -7,19 +7,23 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
-      - name: validate gradle wrapper
-        uses: gradle/actions/wrapper-validation@v6
       - name: setup jdk
         uses: actions/setup-java@v5
         with:
           java-version: '25'
           distribution: 'microsoft'
-      - name: make gradle wrapper executable
-        run: chmod +x ./gradlew
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.7.1'
       - name: build
-        run: ./gradlew build
+        run: |
+          project_dir=$(dirname "$(find . -name settings.gradle -not -path './.git/*' | head -n 1)")
+          echo "Building in $project_dir"
+          cd "$project_dir"
+          gradle build
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: Artifacts
-          path: build/libs/
+          path: '**/build/libs/*.jar'
